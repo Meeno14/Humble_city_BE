@@ -1,17 +1,22 @@
 const db = require("../models");
 const User = db.user;
-const Room = db.room;
-const Op = db.Sequelize.Op;
 var bcrypt = require("bcryptjs");
 exports.signup = (req, res) => {
   // Save User to Database
-  User.create({
+  payload = {
     username: req.body.username,
     email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8)
-  })
+    password: bcrypt.hashSync(req.body.password, 8),
+  }
+  User.create(payload)
     .then(user => {
-      res.send({ message: "User was registered successfully!" });  
+
+      res.send({ message: "User was registered successfully!", payload: {
+        username: user.username,
+        email: user.email,
+        id: user.id,
+        roomHistory: []
+      }  });  
     })
     .catch(err => {
       res.status(500).send({ message: err.message });
@@ -20,32 +25,40 @@ exports.signup = (req, res) => {
 exports.signin = (req, res) => {
   User.findOne({
     where: {
-      username: req.body.username
+      email: req.body.email
     }
   })
     .then(user => {
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.send({ message: "User Not found." });
       }
       var passwordIsValid = bcrypt.compareSync(
         req.body.password,
         user.password
       );
       if (!passwordIsValid) {
-        return res.status(401).send({
-          accessToken: null,
+        return res.send({
           message: "Invalid Password!"
+          , failed: true
         });
       }
-      let rooms = [];
-      res.status(200).send({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        roomHistory: rooms
+
+      user.getRooms().then(rooms => {
+        let visitedRooms = []
+
+        for (let i = 0; i < rooms.length; i++) {
+          visitedRooms.push({ roomId: rooms[i].room_id, name: rooms[i].name })
+        }
+      
+        res.send({
+          username: user.username,
+          email: user.email,
+          id: user.id,
+          roomHistory: visitedRooms
+        });
+      })
+      .catch(err => {
+        res.send({ message: err.message });
       });
     })
-    .catch(err => {
-      res.status(500).send({ message: err.message });
-    });
 };

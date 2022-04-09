@@ -14,7 +14,7 @@ io.on("connection", (socket) => {
   socket.emit("joining-room", socket.id);
 
   socket.on("join-room", (username, userId, roomId) => {
-    console.log(username, "joined")
+    console.log(username, "joined");
     socket.join(roomId);
 
     socket.on("message", (message) => {
@@ -23,7 +23,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-      roomController.leaveRoom(userId, roomId)
+      roomController.leaveRoom(userId, roomId);
       socket.emit("user-disconnected", userId, roomId);
     });
   });
@@ -38,7 +38,7 @@ app.post("/api/login", authController.signin);
 app.post("/api/create-room", roomController.createRoom);
 app.post("/api/connect-room", roomController.joinRoom);
 
-// db.sequelize.sync({ force: true });
+// db.sequelize.sync();
 
 server.listen(3001, () => {
   console.log("listening on http://localhost:3001/");

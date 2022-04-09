@@ -9,60 +9,80 @@ exports.createRoom = (req, res) => {
 
   if (name === "") {
     res.send({ failed: "please fill out the room name" });
+    return;
   }
 
-  const Play = require("../models/play.model")(sequelize, Sequelize, id);
+  const play = require("../models/play.model")(sequelize, Sequelize, id);
 
   //Add more room to the list
   Room.create({ name, room_id: id }).then(() => {
     //create new table containing players
-    Play.sync().then(() => {
+    play.sync().then(() => {
       res.send({ message: "Successfully created a room!" });
     });
   });
 };
 exports.joinRoom = (req, res) => {
-  const { room, roomId , username, id } = req.body
+  const { room, roomId, user, playerId } = req.body;
 
+  //insert user to userlist on the romm
   Room.findOne({
     where: {
       room_id: roomId,
       name: room,
     },
   }).then((result) => {
-
     //Check is room with inputted name exist
-    if (result == null) return res.send({ failed: `Room ${room} doesn't exist`})
+    if (result == null)
+      return res.send({ failed: `Room ${room} doesn't exist` });
 
-
-    const Play = require("../models/play.model")(
-      sequelize,
-      Sequelize,
-      result.room_id
-    );
+    const play = require("../models/play.model")(sequelize, Sequelize, roomId);
 
     //insert new player to joined room
-    Play.create({
-      player: username,
-      player_id: id,
-    }).then(() => {
-      Play.findAll().then((results) => {
-        res.send({results, roomId: result.room_id});
+    play
+      .create({
+        player: user.name,
+        player_id: playerId,
+      })
+      .then(() => {
+        play.findAll().then((results) => {
+          res.send({ results });
+        });
       });
-    });
+
+    //update user room history
+    if (user.id) {
+      User.findOne({
+        where: {
+          id: user.id,
+        },
+      }).then((user) => {
+        Room.findOne({
+          where: {
+            room_id: roomId,
+          },
+        }).then((room) => {
+          user.addRooms(room);
+        });
+      });
+    }
   });
 };
 
 exports.leaveRoom = (userId, roomId) => {
-  const Play = require("../models/play.model")(
-    sequelize,
-    Sequelize,
-    roomId
-  );
+  const play = require("../models/play.model")(sequelize, Sequelize, roomId);
 
-  Play.destroy({
+  Room.findOne({
     where: {
-      player_id: userId,
+      room_id: roomId,
     },
-  })
+  }).then((result) => {
+    if (result == null) return;
+
+    play.destroy({
+      where: {
+        player_id: userId,
+      },
+    });
+  });
 };
