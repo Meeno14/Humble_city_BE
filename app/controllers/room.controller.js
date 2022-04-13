@@ -5,19 +5,19 @@ const Sequelize = db.Sequelize;
 const sequelize = db.sequelize;
 
 exports.createRoom = (req, res) => {
-  const { name, id } = req.body;
+  const { name, id, user } = req.body;
 
   if (name === "") {
     res.send({ failed: "please fill out the room name" });
     return;
   }
 
-  const play = require("../models/play.model")(sequelize, Sequelize, id);
+  const Play = require("../models/play.model")(sequelize, Sequelize, id);
 
   //Add more room to the list
-  Room.create({ name, room_id: id }).then(() => {
+  Room.create({ name, room_id: id, creator: user }).then(() => {
     //create new table containing players
-    play.sync().then(() => {
+    Play.sync().then(() => {
       res.send({ message: "Successfully created a room!" });
     });
   });
@@ -36,19 +36,17 @@ exports.joinRoom = (req, res) => {
     if (result == null)
       return res.send({ failed: `Room ${room} doesn't exist` });
 
-    const play = require("../models/play.model")(sequelize, Sequelize, roomId);
+    const Play = require("../models/play.model")(sequelize, Sequelize, roomId);
 
     //insert new player to joined room
-    play
-      .create({
-        player: user.name,
-        player_id: playerId,
-      })
-      .then(() => {
-        play.findAll().then((results) => {
-          res.send({ results });
-        });
+    Play.create({
+      player: user.name,
+      player_id: playerId,
+    }).then(() => {
+      Play.findAll().then((results) => {
+        res.send({ results, creator: result.creator });
       });
+    });
 
     //update user room history
     if (user.id) {
@@ -70,7 +68,7 @@ exports.joinRoom = (req, res) => {
 };
 
 exports.leaveRoom = (userId, roomId) => {
-  const play = require("../models/play.model")(sequelize, Sequelize, roomId);
+  const Play = require("../models/play.model")(sequelize, Sequelize, roomId);
 
   Room.findOne({
     where: {
@@ -79,7 +77,7 @@ exports.leaveRoom = (userId, roomId) => {
   }).then((result) => {
     if (result == null) return;
 
-    play.destroy({
+    Play.destroy({
       where: {
         player_id: userId,
       },

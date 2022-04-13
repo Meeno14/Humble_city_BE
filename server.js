@@ -38,7 +38,7 @@ app.post("/api/login", authController.signin);
 app.post("/api/create-room", roomController.createRoom);
 app.post("/api/connect-room", roomController.joinRoom);
 
-// db.sequelize.sync();
+// db.sequelize.sync({ force: true });
 
 server.listen(3001, () => {
   console.log("listening on http://localhost:3001/");
