@@ -43,7 +43,7 @@ exports.joinRoom = (req, res) => {
       player: user.name,
       player_id: playerId,
     }).then(() => {
-      Play.findAll().then((results) => {
+      Play.findAll({ order: [["player", "ASC"]] }).then((results) => {
         res.send({ results, creator: result.creator });
       });
     });
