@@ -18,8 +18,11 @@ io.on("connection", (socket) => {
     socket.join(roomId);
 
     socket.on("message", (message) => {
-      console.log(message);
-      socket.to(roomId).emit("send-message", `${username}: ${message}`);
+      socket.to(roomId).emit("send-message", { username, message });
+    });
+
+    socket.on("character move", (direcrtion) => {
+      socket.to(roomId).emit("move to", `${username} walk ${direcrtion}`);
     });
 
     socket.on("disconnect", () => {
