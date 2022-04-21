@@ -15,7 +15,7 @@ exports.createRoom = (req, res) => {
   const Play = require("../models/play.model")(sequelize, Sequelize, id);
 
   //Add more room to the list
-  Room.create({ name, room_id: id, creator: user }).then(() => {
+  Room.create({ name, id, creator: user }).then(() => {
     //create new table containing players
     Play.sync().then(() => {
       res.send({ message: "Successfully created a room!" });
@@ -28,7 +28,7 @@ exports.joinRoom = (req, res) => {
   //insert user to userlist on the romm
   Room.findOne({
     where: {
-      room_id: roomId,
+      id: roomId,
       name: room,
     },
   }).then((result) => {
@@ -41,7 +41,7 @@ exports.joinRoom = (req, res) => {
     //insert new player to joined room
     Play.create({
       player: user.name,
-      player_id: playerId,
+      id: playerId,
     }).then(() => {
       Play.findAll({ order: [["player", "ASC"]] }).then((results) => {
         res.send({ results, creator: result.creator });
@@ -57,7 +57,7 @@ exports.joinRoom = (req, res) => {
       }).then((user) => {
         Room.findOne({
           where: {
-            room_id: roomId,
+            id: roomId,
           },
         }).then((room) => {
           user.addRooms(room);
@@ -72,14 +72,14 @@ exports.leaveRoom = (userId, roomId) => {
 
   Room.findOne({
     where: {
-      room_id: roomId,
+      id: roomId,
     },
   }).then((result) => {
     if (result == null) return;
 
     Play.destroy({
       where: {
-        player_id: userId,
+        id: userId,
       },
     });
   });

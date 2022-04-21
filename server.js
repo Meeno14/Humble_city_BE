@@ -14,6 +14,7 @@ io.on("connection", (socket) => {
   socket.emit("joining-room", socket.id);
 
   socket.on("join-room", (username, userId, roomId) => {
+    socket.to(roomId).emit("new-user", username, userId);
     console.log(username, "joined");
     socket.join(roomId);
 
@@ -21,13 +22,13 @@ io.on("connection", (socket) => {
       socket.to(roomId).emit("send-message", { username, message });
     });
 
-    socket.on("character move", (direcrtion) => {
-      socket.to(roomId).emit("move to", `${username} walk ${direcrtion}`);
+    socket.on("character-move", (direcrtion) => {
+      socket.to(roomId).emit("move-to", `${username} walk ${direcrtion}`);
     });
 
     socket.on("disconnect", () => {
+      socket.to(roomId).emit("user-disconnected", userId);
       roomController.leaveRoom(userId, roomId);
-      socket.emit("user-disconnected", userId, roomId);
     });
   });
 });
