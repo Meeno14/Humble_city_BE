@@ -18,19 +18,23 @@ io.on("connection", (socket) => {
     console.log(username, "joined");
     socket.join(roomId);
     socket.on("done-loading", () => {
-      socket.to(roomId).emit("get-coords", userId);
+      socket.to(roomId).emit("give-coords", userId);
     });
 
     socket.on("message", (message) => {
       socket.to(roomId).emit("send-message", { username, message });
     });
 
-    socket.on("character-move", (direcrtion) => {
-      io.in(roomId).emit("character-move", userId, direcrtion);
+    socket.on("character-move", (direcrtion, x, y) => {
+      io.in(roomId).emit("character-move", userId, direcrtion, x, y);
     });
 
-    socket.on("give-coord", (x, y, fromWho, toWho) => {
-      io.to(toWho).emit("give-coord", x, y, fromWho);
+    socket.on("get-coord", (x, y, toWho) => {
+      io.to(toWho).emit("get-coord", x, y, userId);
+    });
+
+    socket.on("share-coord", (x, y) => {
+      socket.to(roomId).emit("share-coord", x, y, userId);
     });
 
     socket.on("disconnect", () => {
