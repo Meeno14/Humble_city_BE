@@ -48,7 +48,7 @@ exports.signin = (req, res) => {
 
         for (let i = 0; i < rooms.length; i++) {
           visitedRooms.push({
-            roomId: rooms[i].room_id,
+            roomId: rooms[i].id,
             name: rooms[i].name,
             creator: rooms[i].creator,
           });

@@ -17,13 +17,20 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("new-user", username, userId);
     console.log(username, "joined");
     socket.join(roomId);
+    socket.on("done-loading", () => {
+      socket.to(roomId).emit("get-coords", userId);
+    });
 
     socket.on("message", (message) => {
       socket.to(roomId).emit("send-message", { username, message });
     });
 
     socket.on("character-move", (direcrtion) => {
-      socket.to(roomId).emit("move-to", `${username} walk ${direcrtion}`);
+      io.in(roomId).emit("character-move", userId, direcrtion);
+    });
+
+    socket.on("give-coord", (x, y, fromWho, toWho) => {
+      io.to(toWho).emit("give-coord", x, y, fromWho);
     });
 
     socket.on("disconnect", () => {
@@ -42,7 +49,7 @@ app.post("/api/login", authController.signin);
 app.post("/api/create-room", roomController.createRoom);
 app.post("/api/connect-room", roomController.joinRoom);
 
-// db.sequelize.sync({ force: true });
+// db.sequelize.sync();
 
 server.listen(3001, () => {
   console.log("listening on http://localhost:3001/");
