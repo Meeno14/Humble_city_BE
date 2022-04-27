@@ -1,6 +1,6 @@
 const db = require("../models");
 const User = db.user;
-var bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 exports.signup = (req, res) => {
   // Save User to Database
   payload = {

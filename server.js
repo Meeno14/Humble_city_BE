@@ -52,6 +52,7 @@ app.post("/api/register", verifySignUp, authController.signup);
 app.post("/api/login", authController.signin);
 app.post("/api/create-room", roomController.createRoom);
 app.post("/api/connect-room", roomController.joinRoom);
+app.post("/api/get-roomhistory", roomController.getRoomHistory);
 
 // db.sequelize.sync();
 
