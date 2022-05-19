@@ -94,6 +94,8 @@ exports.getRoomHistory = (req, res) => {
       id: userId,
     },
   }).then((user) => {
+    if (user == null) return res.send("user not found");
+
     user.getRooms().then(async function (rooms) {
       let visitedRooms = [];
 

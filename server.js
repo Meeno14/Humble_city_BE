@@ -37,6 +37,18 @@ io.on("connection", (socket) => {
       socket.to(roomId).emit("share-coord", x, y, userId);
     });
 
+    socket.on("calling", (who) => {
+      io.to(who).emit("called", userId);
+    });
+
+    socket.on("leaving-call", (who) => {
+      io.to(who).emit("leaved-call", userId);
+    });
+
+    socket.on("toggleMic", (who) => {
+      io.in(roomId).emit("toggleMic", who);
+    });
+
     socket.on("disconnect", () => {
       socket.to(roomId).emit("user-disconnected", userId);
       roomController.leaveRoom(userId, roomId);
@@ -54,7 +66,7 @@ app.post("/api/create-room", roomController.createRoom);
 app.post("/api/connect-room", roomController.joinRoom);
 app.post("/api/get-roomhistory", roomController.getRoomHistory);
 
-// db.sequelize.sync();
+db.sequelize.sync();
 
 server.listen(3001, () => {
   console.log("listening on http://localhost:3001/");
