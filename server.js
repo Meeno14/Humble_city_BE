@@ -37,16 +37,25 @@ io.on("connection", (socket) => {
       socket.to(roomId).emit("share-coord", x, y, userId);
     });
 
-    socket.on("calling", (who) => {
-      io.to(who).emit("called", userId);
+    socket.on("calling", (who, mic, webcam, calling) => {
+      if (calling) return io.to(who).emit("called", userId, mic, webcam);
+      io.to(who).emit("pass-device", userId, mic, webcam);
     });
 
-    socket.on("leaving-call", (who) => {
-      io.to(who).emit("leaved-call", userId);
+    socket.on("leaving-call", (who, called) => {
+      if (called) return io.to(who).emit("leaved-call", userId);
+      io.to(who).emit("ask-to-leave", userId);
     });
 
-    socket.on("toggleMic", (who) => {
-      io.in(roomId).emit("toggleMic", who);
+    socket.on("toggle-input", (who, index, boolean) => {
+      switch (index) {
+        case 0:
+          io.in(roomId).emit("toggle-mic", who, boolean);
+          break;
+        case 1:
+          io.in(roomId).emit("toggle-cam", who, boolean);
+          break;
+      }
     });
 
     socket.on("disconnect", () => {
