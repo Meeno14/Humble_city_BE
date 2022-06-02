@@ -25,8 +25,8 @@ io.on("connection", (socket) => {
       socket.to(roomId).emit("send-message", { username, message });
     });
 
-    socket.on("character-move", (direcrtion, x, y) => {
-      io.in(roomId).emit("character-move", userId, direcrtion, x, y);
+    socket.on("character-move", (direcrtion) => {
+      io.in(roomId).emit("character-move", direcrtion, userId);
     });
 
     socket.on("get-coord", (x, y, toWho) => {
@@ -54,6 +54,9 @@ io.on("connection", (socket) => {
           break;
         case 1:
           io.in(roomId).emit("toggle-cam", who, boolean);
+          break;
+        case 2:
+          socket.emit("share-screen");
           break;
       }
     });
